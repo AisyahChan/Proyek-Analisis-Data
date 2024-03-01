@@ -2,26 +2,18 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import streamlit as st
-
-# Set style seaborn
+from babel.numbers import format_currency
 sns.set(style='dark')
 
-# Menyiapkan data day_df
-day_df = pd.read_csv("dashboard/day.csv")
-day_df.head()
-
-# Menghapus kolom yang tidak diperlukan
-drop_col = ['windspeed']
-
-for i in day_df.columns:
-  if i in drop_col:
-    day_df.drop(labels=i, axis=1, inplace=True)
-
-# Mengubah nama judul kolom
-day_df.rename(columns={
-    'dteday': 'dateday',
-    'yr': 'year',
-    'mnth': 'month',
-    'weathersit': 'weather_cond',
-    'cnt': 'count'
-}, inplace=True)
+def create_daily_orders_df(df):
+    daily_orders_df = df.resample(rule='D', on='order_date').agg({
+        "order_id": "nunique",
+        "total_price": "sum"
+    })
+    daily_orders_df = daily_orders_df.reset_index()
+    daily_orders_df.rename(columns={
+        "order_id": "order_count",
+        "total_price": "revenue"
+    }, inplace=True)
+    
+    return daily_orders_df
